@@ -1,0 +1,27 @@
+{
+  "components": [
+    {
+      "label": "Entree le lot ",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0gln32t",
+        "columns": null
+      },
+      "id": "Field_132nw5u",
+      "key": "lot",
+      "properties": {},
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Attribution_du_Lot",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.5.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.39.0"
+  },
+  "schemaVersion": 19
+}

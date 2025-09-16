@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d6lfak" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.39.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <bpmn:process id="ProcessusDDCF" name="ProcessusDDFC" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Debut du processus">
+      <bpmn:outgoing>Flow_0gkj37u</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0gkj37u" sourceRef="StartEvent_1" targetRef="Attribution_du_lot" />
+    <bpmn:endEvent id="Event_14uufwc" name="Fin du processus">
+      <bpmn:incoming>Flow_1kjqu24</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Attribution_du_lot" name="Attribution du Lot">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition assignee="DG" />
+        <zeebe:formDefinition externalReference="lot" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0gkj37u</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qnzx39</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="creationNotification" name="Creer la Notification">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition assignee="" candidateGroups="SR" candidateUsers="" />
+        <zeebe:formDefinition externalReference="notif" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ojuf5c</bpmn:incoming>
+      <bpmn:outgoing>Flow_0uznl3v</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Encaissement" name="Encaisser la Notification">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition assignee="Comptabilite" />
+        <zeebe:formDefinition externalReference="caisse" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0jmie9u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hzl6gx</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1qnzx39" sourceRef="Attribution_du_lot" targetRef="EnregistrerDonnees" />
+    <bpmn:serviceTask id="EnregistrerDonnees" name="Enregistrer les Données">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="WorkerPostgres1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1qnzx39</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ojuf5c</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1ojuf5c" sourceRef="EnregistrerDonnees" targetRef="creationNotification" />
+    <bpmn:sequenceFlow id="Flow_0hzl6gx" sourceRef="Encaissement" targetRef="receipt" />
+    <bpmn:serviceTask id="receipt" name="Générer le Reçu">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="WorkerReceipt" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0hzl6gx</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kjqu24</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1kjqu24" sourceRef="receipt" targetRef="Event_14uufwc" />
+    <bpmn:sequenceFlow id="Flow_0uznl3v" sourceRef="creationNotification" targetRef="Activity_06d7c0t" />
+    <bpmn:serviceTask id="Activity_06d7c0t" name="Appel a PostgreSQL et MinIO">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="WorkerPostgres1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0uznl3v</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jmie9u</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0jmie9u" sourceRef="Activity_06d7c0t" targetRef="Encaissement" />
+    <bpmn:textAnnotation id="TextAnnotation_1w6wp05">
+      <bpmn:text>Le DG attribut le numero du Lot</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_00uowjm" associationDirection="None" sourceRef="Attribution_du_lot" targetRef="TextAnnotation_1w6wp05" />
+    <bpmn:textAnnotation id="TextAnnotation_1rhuj51">
+      <bpmn:text>Le service Recouvrement cree la Notification [Nom de l'interesser, Superficie]</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1gxcjr6" associationDirection="None" sourceRef="creationNotification" targetRef="TextAnnotation_1rhuj51" />
+    <bpmn:textAnnotation id="TextAnnotation_19oltxy">
+      <bpmn:text>L'interesser paie le montant a la Caisse</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0othoxq" associationDirection="None" sourceRef="Encaissement" targetRef="TextAnnotation_19oltxy" />
+    <bpmn:textAnnotation id="postgres">
+      <bpmn:text>Appel a PostgreSQL et MinIO</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1oe9vcv" associationDirection="None" sourceRef="EnregistrerDonnees" targetRef="postgres" />
+    <bpmn:textAnnotation id="TextAnnotation_19ulq9n">
+      <bpmn:text>Appel a postgres et MinIO</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0xrz0v4" associationDirection="None" sourceRef="receipt" targetRef="TextAnnotation_19ulq9n" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ProcessusDDCF">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="412" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="175" y="455" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1e6dj9b_di" bpmnElement="Attribution_du_lot">
+        <dc:Bounds x="380" y="390" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0s0i5rj_di" bpmnElement="EnregistrerDonnees">
+        <dc:Bounds x="650" y="390" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qvqpih_di" bpmnElement="creationNotification">
+        <dc:Bounds x="910" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0089616_di" bpmnElement="Activity_06d7c0t">
+        <dc:Bounds x="1170" y="390" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qzyiji_di" bpmnElement="Encaissement">
+        <dc:Bounds x="1480" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14uufwc_di" bpmnElement="Event_14uufwc">
+        <dc:Bounds x="2002" y="412" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1978" y="455" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08786j3_di" bpmnElement="receipt">
+        <dc:Bounds x="1750" y="390" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1oe9vcv_di" bpmnElement="Association_1oe9vcv">
+        <di:waypoint x="713" y="390" />
+        <di:waypoint x="787" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1gxcjr6_di" bpmnElement="Association_1gxcjr6">
+        <di:waypoint x="979" y="390" />
+        <di:waypoint x="1073" y="195" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_00uowjm_di" bpmnElement="Association_00uowjm">
+        <di:waypoint x="443" y="390" />
+        <di:waypoint x="517" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0othoxq_di" bpmnElement="Association_0othoxq">
+        <di:waypoint x="1540" y="390" />
+        <di:waypoint x="1600" y="137" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0xrz0v4_di" bpmnElement="Association_0xrz0v4">
+        <di:waypoint x="1813" y="390" />
+        <di:waypoint x="1897" y="137" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gkj37u_di" bpmnElement="Flow_0gkj37u">
+        <di:waypoint x="218" y="430" />
+        <di:waypoint x="380" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qnzx39_di" bpmnElement="Flow_1qnzx39">
+        <di:waypoint x="480" y="430" />
+        <di:waypoint x="650" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ojuf5c_di" bpmnElement="Flow_1ojuf5c">
+        <di:waypoint x="750" y="430" />
+        <di:waypoint x="910" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hzl6gx_di" bpmnElement="Flow_0hzl6gx">
+        <di:waypoint x="1580" y="430" />
+        <di:waypoint x="1750" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kjqu24_di" bpmnElement="Flow_1kjqu24">
+        <di:waypoint x="1850" y="430" />
+        <di:waypoint x="2002" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uznl3v_di" bpmnElement="Flow_0uznl3v">
+        <di:waypoint x="1010" y="430" />
+        <di:waypoint x="1170" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jmie9u_di" bpmnElement="Flow_0jmie9u">
+        <di:waypoint x="1270" y="430" />
+        <di:waypoint x="1480" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_1izuel5_di" bpmnElement="postgres">
+        <dc:Bounds x="750" y="100" width="100" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1rhuj51_di" bpmnElement="TextAnnotation_1rhuj51">
+        <dc:Bounds x="1070" y="82" width="100" height="113" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1w6wp05_di" bpmnElement="TextAnnotation_1w6wp05">
+        <dc:Bounds x="480" y="100" width="100" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_19oltxy_di" bpmnElement="TextAnnotation_19oltxy">
+        <dc:Bounds x="1560" y="82" width="100" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_19ulq9n_di" bpmnElement="TextAnnotation_19ulq9n">
+        <dc:Bounds x="1860" y="82" width="100" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
